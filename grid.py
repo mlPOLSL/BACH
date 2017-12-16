@@ -6,7 +6,7 @@ from data_types import Patch, WindowSize, Stride
 def divide_into_patches(image: np.ndarray, number_of_patches_in_x: int,
                         number_of_patches_in_y: int) -> List[Patch]:
     """
-    Divides an image into equally shaped patches. The of each patch is based
+    Divides an image into equally shaped patches. The size of each patch is based
     on the number of patches in x and y that you provide. The patch has always
     the same number of channels as the original image.
     :param image: Pixel values of the image you want to divide
