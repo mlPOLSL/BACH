@@ -28,7 +28,3 @@ def get_features_for_detail_coefficients(detail_coefficients: np.ndarray) -> dic
     kurtosis = stats.kurtosis(detail_coefficients_flattened)
     skewness = stats.skew(detail_coefficients_flattened)
     return max, avg, kurtosis, skewness
-
-
-img = io.imread("/Users/apple/PycharmProjects/BACH_local/Dataset/breasthistology/Training_data/InSitu/norm/normt43.tif")
-print(get_wavelet_features(img, "haar"))
