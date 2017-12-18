@@ -1,6 +1,8 @@
 from typing import List
+
 import numpy as np
-from data_types import Patch, WindowSize, Stride
+
+from DataPreprocessing.Grid.data_types import Patch, WindowSize, Stride
 
 
 def divide_into_patches(image: np.ndarray, number_of_patches_in_x: int,
