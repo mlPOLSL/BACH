@@ -1,11 +1,12 @@
 import unittest
 import numpy as np
 from FeatureExtraction.Wavelets.wavelets_features import get_wavelet_features, get_features_for_detail_coefficients
-
+from data_types import GreyscaleImage
 
 class TestGettingWaveletsFeatures(unittest.TestCase):
     def setUp(self):
-        self.image = np.arange(0, 100)
+        pixels = np.arange(0, 300).reshape((10, 10, 3))
+        self.image = GreyscaleImage(pixels)
 
     def test_that_wrong_mother_wavelet_raise_exception(self):
         self.assertRaises(ValueError, get_wavelet_features, self.image, "wrong_wavelet")
