@@ -1,4 +1,5 @@
 import numpy as np
+from skimage import color
 
 
 class Patch(np.ndarray):
@@ -36,3 +37,12 @@ class Stride(object):
                     type(y_stride)))
         self.x = x_stride
         self.y = y_stride
+
+
+class GreyscaleImage(np.ndarray):
+    def __new__(cls, pixels: np.ndarray):
+        if not isinstance(pixels, np.ndarray):
+            pixels = np.array(pixels)
+        if pixels.size == 0:
+            raise ValueError("Image cannot be empty")
+        return color.rgb2grey(pixels).view(GreyscaleImage)
