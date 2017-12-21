@@ -52,7 +52,3 @@ def get_features_for_detail_coefficients(
     kurtosis = stats.kurtosis(detail_coefficients_flattened)
     skewness = stats.skew(detail_coefficients_flattened)
     return max, avg, kurtosis, skewness
-
-image = io.imread("/Users/apple/PycharmProjects/BACH/Dataset/Training_data/Benign/norm/normt2.tif")
-image = GreyscaleImage(image)
-print(get_wavelet_features(image, "db1"))
