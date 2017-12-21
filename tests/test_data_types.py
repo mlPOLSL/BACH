@@ -1,5 +1,5 @@
 import unittest
-
+import numpy as np
 from data_types import Patch, WindowSize, Stride, GreyscaleImage
 
 
@@ -43,9 +43,23 @@ class TestStride(unittest.TestCase):
 
 class TestGreyscaleImage(unittest.TestCase):
     def test_if_will_be_converted_to_numpy(self):
-        patch = Patch([[1, 2, 3], [1, 2, 3]])
-        self.assertIsInstance(patch, Patch)
+        image = GreyscaleImage([[[1, 2, 3], [1, 2, 3], [1, 2, 3]],
+                                [[1, 2, 3], [1, 2, 3], [1, 2, 3]],
+                                [[1, 2, 3], [1, 2, 3], [1, 2, 3]]])
+        self.assertIsInstance(image, np.ndarray)
 
     def test_if_cannot_be_empty(self):
         with self.assertRaises(ValueError):
             Patch([])
+
+    def test_if_will_be_converted_to_grayscale_shape(self):
+        image = GreyscaleImage([[[1, 2, 3], [1, 2, 3], [1, 2, 3]],
+                                [[1, 2, 3], [1, 2, 3], [1, 2, 3]],
+                                [[1, 2, 3], [1, 2, 3], [1, 2, 3]]])
+        self.assertTrue(image.shape == (3, 3))
+
+    def test_if_will_be_converted_to_grayscale_values(self):
+        image = GreyscaleImage([[[1, 2, 3], [1, 2, 3], [1, 2, 3]],
+                                [[1, 2, 3], [1, 2, 3], [1, 2, 3]],
+                                [[1, 2, 3], [1, 2, 3], [1, 2, 3]]])
+        self.assertTrue(all(0.0 <= x <= 1.0 for x in image.flatten()))

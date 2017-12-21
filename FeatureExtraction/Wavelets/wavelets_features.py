@@ -2,6 +2,7 @@ import numpy as np
 from scipy import stats
 import pywt
 from data_types import GreyscaleImage
+from typing import Tuple
 
 
 def get_wavelet_features(image: GreyscaleImage, mother_wavelet: str) -> dict:
@@ -36,7 +37,7 @@ def get_wavelet_features(image: GreyscaleImage, mother_wavelet: str) -> dict:
 
 
 def get_features_for_detail_coefficients(
-        detail_coefficients: np.ndarray) -> dict:
+        detail_coefficients: np.ndarray) -> Tuple[float, float, float, float]:
     """
     Extracts wavelet coefficients from a single detail coefficients matrix.
     :param detail_coefficients: Single detail coefficients matrix taken from
