@@ -50,7 +50,7 @@ class TestGreyscaleImage(unittest.TestCase):
 
     def test_if_cannot_be_empty(self):
         with self.assertRaises(ValueError):
-            Patch([])
+            GreyscaleImage([])
 
     def test_if_will_be_converted_to_grayscale_shape(self):
         image = GreyscaleImage([[[1, 2, 3], [1, 2, 3], [1, 2, 3]],
