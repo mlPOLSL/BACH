@@ -4,7 +4,7 @@ The result of each function is a matrix, where the shape is equal to number of
 distances and angles used to obtain the GLCM matrix. If GLCM was formed using
 two distances and three angles, the shape of returned matrix will be (2, 3).
 Functions which are not using already implemented in skimage feature extractions,
-where implemented using the following paper:
+were implemented using the following paper:
 https://doi.org/10.1371/journal.pone.0102107.s001
 """
 

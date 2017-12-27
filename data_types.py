@@ -2,7 +2,7 @@ import numpy as np
 from typing import List
 from skimage import img_as_ubyte, color
 
-UINT8_MAX_VALUE = 256
+UINT8_UNIQUE_VALUES = 256
 
 
 class Patch(np.ndarray):
@@ -54,12 +54,16 @@ class NumpyImageUINT8(np.ndarray):
 
 
 class GLCM(np.ndarray):
+    """
+    Class representing Grey-Level Co-occurrence Matrices. Third and fourth
+    dimension represent matrices for provided distances and angles respectively.
+    """
     def __new__(cls, matrix: np.ndarray, distances: List[int] = 0,
                 angles: List[float] = 0):
         if matrix.ndim != 4:
             raise ValueError(
                 "The GLCM should have 4 dimensions, not".format(matrix.ndim))
-        cls.levels = UINT8_MAX_VALUE
+        cls.levels = UINT8_UNIQUE_VALUES
         cls.distances = distances
         cls.angles = angles
         return matrix.view(GLCM)
