@@ -63,3 +63,13 @@ class GLCM(np.ndarray):
         cls.distances = distances
         cls.angles = angles
         return matrix.view(GLCM)
+
+      
+class GreyscaleImage(np.ndarray):
+    def __new__(cls, pixels: np.ndarray):
+        if not isinstance(pixels, np.ndarray):
+            pixels = np.array(pixels)
+        if pixels.size == 0:
+            raise ValueError("Image cannot be empty")
+        return color.rgb2grey(pixels).view(GreyscaleImage)
+
