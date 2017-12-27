@@ -9,11 +9,11 @@ https://doi.org/10.1371/journal.pone.0102107.s001
 """
 
 import numpy as np
-from math import pow, log, sqrt, exp, degrees
 from copy import copy
-from skimage.feature import greycomatrix, greycoprops
-from data_types import NumpyImageUINT8, GLCM
 from typing import List, Dict
+from math import pow, log, sqrt, exp, degrees
+from data_types import NumpyImageUINT8, GLCM
+from skimage.feature import greycomatrix, greycoprops
 
 
 def construct_glcm(image: NumpyImageUINT8, distances: List[int],

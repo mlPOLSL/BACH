@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 from data_types import GLCM
-from texture_features import calculate_autocorrelation, \
+from FeatureExtraction.Texture.texture_features import calculate_autocorrelation, \
     calculate_cluster_prominence, calculate_cluster_shade, \
     calculate_cluster_tendency, calculate_difference_entropy, calculate_entropy, \
     calculate_IMC2, calculate_IDMN, calculate_IDN, calculate_max_proba, \
