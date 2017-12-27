@@ -13,7 +13,8 @@ import numpy as np
 def remove_invalid_vectors(optical_density_matrix: np.ndarray,
                            beta: float) -> np.ndarray:
     """
-    Returns new array of only optical densities that are
+    Returns new array of only optical densities that are valid i.e. values
+    are not below beta
 
     :param optical_density_matrix: array of vectors of optical densities
     :param beta: threshold when considering valid
@@ -27,8 +28,9 @@ def remove_invalid_vectors(optical_density_matrix: np.ndarray,
 
 def normalize_image(image_matrix: np.ndarray,
                     alpha: float = 1.0,
-                    beta: float = 0.15):
+                    beta: float = 0.15) -> np.ndarray:
     """
+    Normalizes the image.
 
     :param image_matrix: image matrix where each cell represents vector of
     RGB values, these values should be of type float
@@ -72,3 +74,4 @@ def normalize_image(image_matrix: np.ndarray,
     Inorm = np.clip(Inorm, 0, 255)
     Inorm = np.array(Inorm, dtype=np.uint8)
     return Inorm
+
