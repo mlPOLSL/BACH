@@ -1,6 +1,6 @@
 import unittest
 
-from DataPreprocessing.Grid.data_types import Patch, WindowSize, Stride
+from data_types import Patch, WindowSize, Stride
 
 
 class TestPatch(unittest.TestCase):

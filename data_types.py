@@ -1,4 +1,8 @@
 import numpy as np
+from typing import List
+from skimage import img_as_ubyte, color
+
+UINT8_MAX_VALUE = 256
 
 
 class Patch(np.ndarray):
@@ -36,3 +40,26 @@ class Stride(object):
                     type(y_stride)))
         self.x = x_stride
         self.y = y_stride
+
+
+class NumpyImageUINT8(np.ndarray):
+    def __new__(cls, image: np.ndarray):
+        if not isinstance(image, np.ndarray):
+            raise TypeError("Image should be provided as a numpy array")
+        if image.ndim > 1:
+            image = color.rgb2gray(image)
+        if image.dtype != np.uint8:
+            image = img_as_ubyte(image)
+        return image.view(NumpyImageUINT8)
+
+
+class GLCM(np.ndarray):
+    def __new__(cls, matrix: np.ndarray, distances: List[int] = 0,
+                angles: List[float] = 0):
+        if matrix.ndim != 4:
+            raise ValueError(
+                "The GLCM should have 4 dimensions, not".format(matrix.ndim))
+        cls.levels = UINT8_MAX_VALUE
+        cls.distances = distances
+        cls.angles = angles
+        return matrix.view(GLCM)
