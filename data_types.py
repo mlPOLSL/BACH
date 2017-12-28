@@ -77,3 +77,10 @@ class GreyscaleImage(np.ndarray):
             raise ValueError("Image cannot be empty")
         return color.rgb2grey(pixels).view(GreyscaleImage)
 
+class HSVImage(np.ndarray):
+    def __new__(cls, rgb_image: np.ndarray):
+        if not isinstance(rgb_image, np.ndarray):
+            rgb_image = np.array(rgb_image)
+        if rgb_image.size == 0:
+            raise ValueError("Image cannot be empty")
+        return color.rgb2hsv(rgb_image)
