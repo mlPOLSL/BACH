@@ -42,6 +42,9 @@ def normalize_image(image_matrix: np.ndarray,
     Io = 240
     HERef = np.array([[0.5626, 0.2159], [0.7201, 0.8012], [0.4062, 0.5581]])
     maxCRef = np.array([1.9705, 1.0308])
+    RGB_MAX = 255
+    RGB_MIN = 0
+    percentile_to_compute = 99
 
     (h, w, c) = np.shape(image_matrix)
     image_matrix = np.reshape(image_matrix, (h * w, c), order='F')
@@ -65,13 +68,13 @@ def normalize_image(image_matrix: np.ndarray,
     Y = np.transpose(np.reshape(optical_density, (h * w, c)))
 
     C = np.linalg.lstsq(HE, Y)
-    maxC = np.percentile(C[0], 99, axis=1)
+    maxC = np.percentile(C[0], percentile_to_compute, axis=1)
 
     C = C[0] / maxC[:, None]
     C = C * maxCRef[:, None]
     Inorm = Io * np.exp(- np.dot(HERef, C))
     Inorm = np.reshape(np.transpose(Inorm), (h, w, c), order='F')
-    Inorm = np.clip(Inorm, 0, 255)
+    Inorm = np.clip(Inorm, RGB_MIN, RGB_MAX)
     Inorm = np.array(Inorm, dtype=np.uint8)
     return Inorm
 
