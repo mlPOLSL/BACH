@@ -15,6 +15,8 @@ from math import pow, log, sqrt, exp, degrees
 from data_types import NumpyImageUINT8, GLCM
 from skimage.feature import greycomatrix, greycoprops
 
+MIN_INDEXES_SUM = 2
+
 
 def construct_glcm(image: NumpyImageUINT8, distances: List[int],
                    angles: List[float]) -> GLCM:
@@ -83,12 +85,12 @@ def calculate_cluster_prominence(glcm: GLCM):
     for distance in range(0, distances):
         for angle in range(0, angles):
             result = 0
-            for i in range(0, y_shape):
-                row_mean = np.mean(glcm[i, :])
-                for j in range(0, x_shape):
-                    column_mean = np.mean(glcm[:, j])
-                    result += pow(i + 1 + j + 1 - row_mean - column_mean, 4) * \
-                              glcm[i, j, distance, angle]
+            for row in range(0, y_shape):
+                row_mean = np.mean(glcm[row, :])
+                for column in range(0, x_shape):
+                    column_mean = np.mean(glcm[:, column])
+                    result += pow(row + 1 + column + 1 - row_mean - column_mean, 4) * \
+                              glcm[row, column, distance, angle]
             results[distance, angle] = copy(result)
     return results
 
@@ -103,12 +105,12 @@ def calculate_cluster_shade(glcm: GLCM):
     for distance in range(0, distances):
         for angle in range(0, angles):
             result = 0
-            for i in range(0, y_shape):
-                row_mean = np.mean(glcm[i, :])
-                for j in range(0, x_shape):
-                    column_mean = np.mean(glcm[:, j])
-                    result += pow(i + 1 + j + 1 - row_mean - column_mean, 3) * \
-                              glcm[i, j, distance, angle]
+            for row in range(0, y_shape):
+                row_mean = np.mean(glcm[row, :])
+                for column in range(0, x_shape):
+                    column_mean = np.mean(glcm[:, column])
+                    result += pow(row + 1 + column + 1 - row_mean - column_mean, 3) * \
+                              glcm[row, column, distance, angle]
             results[distance, angle] = copy(result)
     return results
 
@@ -123,12 +125,12 @@ def calculate_cluster_tendency(glcm: GLCM):
     for distance in range(0, distances):
         for angle in range(0, angles):
             result = 0
-            for i in range(0, y_shape):
-                row_mean = np.mean(glcm[i, :, distance, angle])
-                for j in range(0, x_shape):
-                    column_mean = np.mean(glcm[:, j, distance, angle])
-                    result += pow(i + 1 + j + 1 - row_mean - column_mean, 2) * \
-                              glcm[i, j, distance, angle]
+            for row in range(0, y_shape):
+                row_mean = np.mean(glcm[row, :, distance, angle])
+                for column in range(0, x_shape):
+                    column_mean = np.mean(glcm[:, column, distance, angle])
+                    result += pow(row + 1 + column + 1 - row_mean - column_mean, 2) * \
+                              glcm[row, column, distance, angle]
             results[distance, angle] = copy(result)
     return results
 
@@ -158,13 +160,6 @@ def calculate_difference_entropy(glcm: GLCM):
     return results
 
 
-def change_undefinied_to_zeros(matrix: np.ndarray):
-    if matrix.ndim != 2:
-        raise ValueError("The matrix should be two dimensional")
-    matrix[matrix < 0] = 0
-    return matrix
-
-
 def calculate_entropy(glcm: GLCM):
     if not isinstance(glcm, GLCM):
         raise TypeError("glcm should be an instance of GLCM class")
@@ -191,10 +186,10 @@ def calculate_HXY2(glcm: GLCM):
     for distance in range(0, distances):
         for angle in range(0, angles):
             result = 0
-            for i in range(0, x_shape):
-                row_sum = np.sum(glcm[i, :, distance, angle])
-                for j in range(0, y_shape):
-                    column_sum = np.sum(glcm[:, j, distance, angle])
+            for row in range(0, x_shape):
+                row_sum = np.sum(glcm[row, :, distance, angle])
+                for column in range(0, y_shape):
+                    column_sum = np.sum(glcm[:, column, distance, angle])
                     row_col_product = row_sum * column_sum
                     if row_col_product != 0:
                         result += row_col_product * np.log(row_col_product)
@@ -212,8 +207,8 @@ def calculate_IMC2(glcm: GLCM):
     results = np.zeros((distances, angles))
     for distance in range(0, distances):
         for angle in range(0, angles):
-            result = sqrt(
-                1 - exp(-2. * (entropy[distance, angle] - hxy2[distance, angle])))
+            result = sqrt(1 - exp(-2. * (entropy[distance, angle] -
+                                         hxy2[distance, angle])))
             results[distance, angle] = copy(result)
     return results
 
@@ -235,8 +230,8 @@ def calculate_IDMN(glcm: GLCM):
             denominator = np.power(denominator, 2)
             denominator = np.divide(denominator, pow(glcm.levels, 2))
             denominator = np.add(denominator, 1)
-            results[distance, angle] = np.sum(
-                np.divide(single_glcm, denominator))
+            results[distance, angle] = np.sum(np.divide(single_glcm,
+                                                        denominator))
     return results
 
 
@@ -256,8 +251,8 @@ def calculate_IDN(glcm: GLCM):
             denominator = np.absolute(np.subtract(rows, cols))
             denominator = np.divide(denominator, glcm.levels)
             denominator = np.add(denominator, 1)
-            results[distance, angle] = np.sum(
-                np.divide(single_glcm, denominator))
+            results[distance, angle] = np.sum(np.divide(single_glcm,
+                                                        denominator))
     return results
 
 
@@ -286,9 +281,9 @@ def calculate_sum_average(glcm: GLCM):
     for distance in range(0, distances):
         for angle in range(0, angles):
             result = 0
-            single_glcm = glcm[:, :, distance, angle].reshape(
-                (y_shape, x_shape))
-            for i in range(2, 2 * glcm.levels + 1):
+            single_glcm = glcm[:, :, distance, angle].reshape((y_shape,
+                                                               x_shape))
+            for i in range(MIN_INDEXES_SUM, 2 * glcm.levels + 1):
                 result += i * np.sum(single_glcm[cols + rows == i])
             results[distance, angle] = copy(result)
     return results
@@ -307,9 +302,9 @@ def calculate_sum_entropy(glcm: GLCM):
     for distance in range(0, distances):
         for angle in range(0, angles):
             result = 0
-            single_glcm = glcm[:, :, distance, angle].reshape(
-                (y_shape, x_shape))
-            for i in range(2, 2 * glcm.levels + 1):
+            single_glcm = glcm[:, :, distance, angle].reshape((y_shape,
+                                                               x_shape))
+            for i in range(MIN_INDEXES_SUM, 2 * glcm.levels + 1):
                 diagonals = np.sum(single_glcm[cols + rows == i])
                 if diagonals != 0:
                     result += diagonals * np.log2(diagonals)
@@ -331,11 +326,11 @@ def calculate_sum_variance(glcm: GLCM):
     for distance in range(0, distances):
         for angle in range(0, angles):
             result = 0
-            single_glcm = glcm[:, :, distance, angle].reshape(
-                (y_shape, x_shape))
-            for i in range(2, 2 * glcm.levels + 1):
-                result += pow(i - sum_entropy[distance, angle], 2) * np.sum(
-                    single_glcm[cols + rows == i])
+            single_glcm = glcm[:, :, distance, angle].reshape((y_shape,
+                                                               x_shape))
+            for i in range(MIN_INDEXES_SUM, 2 * glcm.levels + 1):
+                result += pow(i - sum_entropy[distance, angle], 2) * \
+                          np.sum(single_glcm[cols + rows == i])
             results[distance, angle] = result
     return results
 
@@ -344,11 +339,11 @@ def add_features_to_dict(dictionary: Dict[str, float], features: np.ndarray,
                          feature_name: str, distances: List[int],
                          angles: List[float]):
     distances_shape, angles_shape = features.shape
-    for i in range(0, distances_shape):
-        for j in range(0, angles_shape):
-            name = feature_name + "_distance" + str(
-                distances[i]) + "_angle" + str(int(degrees(angles[j])))
-            dictionary[name] = copy(features[i, j])
+    for distance in range(0, distances_shape):
+        for angle in range(0, angles_shape):
+            name = feature_name + "_distance" + str(distances[distance]) + \
+                   "_angle" + str(int(degrees(angles[angle])))
+            dictionary[name] = copy(features[distance, angle])
     return dictionary
 
 
