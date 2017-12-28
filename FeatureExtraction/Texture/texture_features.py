@@ -13,6 +13,7 @@ from copy import copy
 from typing import List, Dict
 from math import pow, log, sqrt, exp, degrees
 from data_types import NumpyImageUINT8, GLCM
+from collections import OrderedDict
 from skimage.feature import greycomatrix, greycoprops
 
 MIN_INDEXES_SUM = 2
@@ -352,7 +353,7 @@ def extract_texture_features(image: NumpyImageUINT8, distances: List[int],
     if not isinstance(image, NumpyImageUINT8):
         raise TypeError("image should be an instance of NumpyImageUINT8")
     glcm = construct_glcm(image, distances, angles)
-    features = {}
+    features = OrderedDict()
     contrast = calculate_contrast(glcm)
     features = add_features_to_dict(features, contrast, 'contrast', distances,
                                     angles)
