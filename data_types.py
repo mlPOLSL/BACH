@@ -1,5 +1,8 @@
 import numpy as np
-from skimage import color
+from typing import List
+from skimage import img_as_ubyte, color
+
+UINT8_UNIQUE_VALUES = 256
 
 
 class Patch(np.ndarray):
@@ -39,6 +42,33 @@ class Stride(object):
         self.y = y_stride
 
 
+class NumpyImageUINT8(np.ndarray):
+    def __new__(cls, image: np.ndarray):
+        if not isinstance(image, np.ndarray):
+            raise TypeError("Image should be provided as a numpy array")
+        if image.ndim > 1:
+            image = color.rgb2gray(image)
+        if image.dtype != np.uint8:
+            image = img_as_ubyte(image)
+        return image.view(NumpyImageUINT8)
+
+
+class GLCM(np.ndarray):
+    """
+    Class representing Grey-Level Co-occurrence Matrices. Third and fourth
+    dimension represent matrices for provided distances and angles respectively.
+    """
+    def __new__(cls, matrix: np.ndarray, distances: List[int] = 0,
+                angles: List[float] = 0):
+        if matrix.ndim != 4:
+            raise ValueError(
+                "The GLCM should have 4 dimensions, not".format(matrix.ndim))
+        cls.levels = UINT8_UNIQUE_VALUES
+        cls.distances = distances
+        cls.angles = angles
+        return matrix.view(GLCM)
+
+      
 class GreyscaleImage(np.ndarray):
     def __new__(cls, pixels: np.ndarray):
         if not isinstance(pixels, np.ndarray):
@@ -46,3 +76,4 @@ class GreyscaleImage(np.ndarray):
         if pixels.size == 0:
             raise ValueError("Image cannot be empty")
         return color.rgb2grey(pixels).view(GreyscaleImage)
+

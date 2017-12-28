@@ -1,7 +1,7 @@
 import unittest
 
 import numpy as np
-from DataPreprocessing.Grid.data_types import WindowSize, Stride
+from data_types import WindowSize, Stride
 
 from DataPreprocessing.Grid.grid import divide_into_patches, sliding_window
 
