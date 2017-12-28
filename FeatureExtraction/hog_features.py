@@ -1,27 +1,35 @@
+from typing import Tuple
+from logging import warning
 from skimage.feature import hog
-from PIL import Image
-import numpy as np
-import matplotlib.pyplot as plt
-from skimage import data, exposure
-from skimage.color import rgb2gray
+from data_types import GreyscaleImage
+from collections import OrderedDict
 
-img = Image.open("C:\\Users\\user\PycharmProjects\BACH\\b001.tif")
-arr = np.asarray(img)
-img.close()
-arr = rgb2gray(arr)
-fd= hog(arr, orientations=1, pixels_per_cell=(100, 100), feature_vector=True)
-fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(8, 4), sharex=True, sharey=True)
 
-# ax1.axis('off')
-# ax1.imshow(arr, cmap=plt.cm.gray)
-# ax1.set_title('Input image')
-# ax1.set_adjustable('box-forced')
-#
-# # Rescale histogram for better display
-# hog_image_rescaled = exposure.rescale_intensity(hog_image, in_range=(0, 10))
-#
-# ax2.axis('off')
-# ax2.imshow(hog_image_rescaled, cmap=plt.cm.gray)
-# ax2.set_title('Histogram of Oriented Gradients')
-# ax1.set_adjustable('box-forced')
-# plt.show()
+def extract_hog_features(greyscale_image: GreyscaleImage, orientations=9,
+                         pixels_per_cell=(2, 2), cells_per_block=(2, 2),
+                         block_norm='L2'):
+    """
+    A function extracting HOG features from the greyscale image.
+    Please be careful with the parameters for big images, as the number of
+    extracted features might be high. You may also consider applying PCA.
+    For all the parameter descriptions please refer to:
+    http://scikit-image.org/docs/0.13.x/api/skimage.feature.html?highlight=hog#skimage.feature.hog
+    """
+    if not isinstance(greyscale_image, GreyscaleImage):
+        raise TypeError("Image should be an instance of GreyscaleImage")
+    img_shape_y, img_shape_x = greyscale_image.shape
+    positions_in_x = float(img_shape_x) / float(pixels_per_cell[1])
+    positions_in_y = float(img_shape_y) / float(pixels_per_cell[0])
+    cells_in_block = cells_per_block[0] * cells_per_block[1]
+    number_of_features = orientations * cells_in_block * positions_in_x * \
+                         positions_in_y
+    warning("The number of hog features will "
+            "be around: {}".format(number_of_features))
+
+    hog_features = hog(greyscale_image, orientations, pixels_per_cell,
+                       cells_per_block, block_norm)
+    features = OrderedDict()
+    for index, feature in enumerate(hog_features):
+        name = 'hog_' + str(index)
+        features[name] = feature
+    return features
