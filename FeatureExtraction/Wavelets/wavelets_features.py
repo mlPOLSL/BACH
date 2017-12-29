@@ -28,7 +28,7 @@ def get_wavelet_features(image: GreyscaleImage, mother_wavelet: str) -> dict:
     for detail_coefficients, name in zip([cH, cV, cD], ["cH", "cV", "cD"]):
         detail_features = get_features_for_detail_coefficients(
             detail_coefficients, mother_wavelet, name)
-        features_dict = {**features_dict, **detail_features}
+        features_dict = OrderedDict({**features_dict, **detail_features})
     return features_dict
 
 
