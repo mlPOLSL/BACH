@@ -1,10 +1,8 @@
 from collections import OrderedDict
 import numpy as np
 from scipy import stats
-from skimage.feature import greycoprops
 import pywt
 from data_types import GreyscaleImage
-from typing import Tuple
 
 
 def get_wavelet_features(image: GreyscaleImage, mother_wavelet: str) -> dict:
@@ -41,7 +39,9 @@ def get_features_for_detail_coefficients(
     Extracts wavelet coefficients from a single detail coefficients matrix.
     :param detail_coefficients: Single detail coefficients matrix taken from
         Discrete Wavelet Transform
-    :return: Values of the features: max, avg, kurtosis, skewness
+    :param mother_wavelet: Name of the mother wavelet.
+    :param detail_name: Name of the detail matrix.
+    :return: Ordered dict of the features: max, avg, kurtosis, skewness, sum
     """
     key_prefix = mother_wavelet + "_" + detail_name + "_"
     detail_coefficients_flattened = detail_coefficients.flatten()
@@ -51,6 +51,9 @@ def get_features_for_detail_coefficients(
     detail_features[key_prefix + "kurtosis"] = stats.kurtosis(
         detail_coefficients_flattened)
     detail_features[key_prefix + "skewness"] = stats.skew(
+        detail_coefficients_flattened)
+    detail_features[key_prefix + "sum"] = np.sum(detail_coefficients_flattened)
+    detail_features[key_prefix + "energy_distance"] = stats.entropy(
         detail_coefficients_flattened)
 
     return detail_features
