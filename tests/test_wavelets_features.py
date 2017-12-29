@@ -21,21 +21,26 @@ class TestGettingDetailCoefficionsFeatures(unittest.TestCase):
         self.image.reshape((20, 5))
 
     def test_that_returns_correct_max(self):
-        max, avg, kurtosis, skewness = get_features_for_detail_coefficients(
-            self.image)
-        self.assertEqual(max, 99)
+        features = get_features_for_detail_coefficients(
+            self.image, "db1", "cA")
+        self.assertEqual(features["db1_cA_max"], 99)
 
     def test_that_returns_correct_avg(self):
-        max, avg, kurtosis, skewness = get_features_for_detail_coefficients(
-            self.image)
-        self.assertEqual(avg, 49.5)
+        features = get_features_for_detail_coefficients(
+            self.image, "db1", "cA")
+        self.assertEqual(features["db1_cA_avg"], 49.5)
 
     def test_that_returns_correct_kurtosis(self):
-        max, avg, kurtosis, skewness = get_features_for_detail_coefficients(
-            self.image)
-        self.assertAlmostEqual(kurtosis, -1.2002400240024003, 9)
+        features = get_features_for_detail_coefficients(
+            self.image, "db1", "cA")
+        self.assertEqual(features["db1_cA_kurtosis"], -1.2002400240024003, 9)
 
     def test_that_returns_correct_skewness(self):
-        max, avg, kurtosis, skewness = get_features_for_detail_coefficients(
-            self.image)
-        self.assertEqual(skewness, 0)
+        features = get_features_for_detail_coefficients(
+            self.image, "db1", "cA")
+        self.assertEqual(features["db1_cA_skewness"], 0)
+
+    def test_that_returns_correct_sum(self):
+        features = get_features_for_detail_coefficients(
+            self.image, "db1", "cA")
+        self.assertEqual(features["db1_cA_sum"], 4950)
