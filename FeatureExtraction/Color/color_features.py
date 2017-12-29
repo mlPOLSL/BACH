@@ -4,6 +4,7 @@ model of color representation.
 ]"""
 
 from typing import Tuple, Dict
+from collections import OrderedDict
 from data_types import HSVImage
 
 HSV_COMPONENTS_AMOUNT = 3
@@ -52,7 +53,6 @@ def extract_color_features(image: HSVImage) -> Dict[str, float]:
     """
     (mean_h, mean_s, mean_v) = color_mean(image)
     (std_h, std_s, std_v) = color_standard_deviation(image)
-
-    return {"color_mean_h" : mean_h, "color_mean_s" : mean_s,
-            "color_mean_v" : mean_v, "color_std_h" : std_h,
-            "color_std_s" : std_s, "color_std_v": std_v}
+    return OrderedDict([("color_mean_h", mean_h), ("color_mean_s", mean_s),
+                        ("color_mean_v", mean_v), ("color_std_h", std_h),
+                        ("color_std_s", std_s), ("color_std_v", std_v)])
