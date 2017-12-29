@@ -1,6 +1,6 @@
 import unittest
 import numpy as np
-from data_types import Patch, WindowSize, Stride, GreyscaleImage
+from data_types import Patch, WindowSize, Stride, GreyscaleImage, HSVImage
 
 
 class TestPatch(unittest.TestCase):
@@ -63,3 +63,12 @@ class TestGreyscaleImage(unittest.TestCase):
                                 [[1, 2, 3], [1, 2, 3], [1, 2, 3]],
                                 [[1, 2, 3], [1, 2, 3], [1, 2, 3]]])
         self.assertTrue(all(0.0 <= x <= 1.0 for x in image.flatten()))
+
+class TestHSVImage(unittest.TestCase):
+    def test_if_coverts_to_numpy(self):
+        image = HSVImage([[[1,2,3],[4,5,6]]])
+        self.assertIsInstance(image,np.ndarray)
+
+    def test_if_cannot_be_empty(self):
+        with self.assertRaises(ValueError):
+            HSVImage([])
