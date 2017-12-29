@@ -3,7 +3,7 @@ Module for extraction of color features using HSV (hue, saturation, value)
 model of color representation.
 ]"""
 
-from typing import Tuple, Dict
+from typing import Tuple
 from collections import OrderedDict
 from data_types import HSVImage
 
@@ -42,7 +42,7 @@ def color_mean(image: HSVImage) -> Tuple[float, float, float]:
     (h_mean, s_mean, v_mean) = pixels_as_one_dimensional_array.mean(COLUMN_AXIS)
     return (h_mean, s_mean, v_mean)
 
-def extract_color_features(image: HSVImage) -> Dict[str, float]:
+def extract_color_features(image: HSVImage) -> OrderedDict:
     """
     Extracts two color features for each component of HSV namely mean and
      standard deviation giving in total six features.
