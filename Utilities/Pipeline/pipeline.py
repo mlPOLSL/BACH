@@ -19,10 +19,8 @@ class PipelineStrategy(object):
         output = PipelineDataPoint(data, self.output_ID)
         return output
 
-    def function(self):
-        print("Strategy execution inputs: {}, output: {}".format(
-            self.inputs_IDs, self.output_ID))
-        return PipelineDataPoint(self.inputs_IDs, self.output_ID)
+    def function(self, inputs):
+        return inputs
 
 
 def find_inputs(list_of_inputs, inputs_IDs):
@@ -38,7 +36,7 @@ class PipelineDataPoint(object):
     """
 
     def __init__(self, data=None, id=None):
-        if data is None and id is None:
+        if data is None or id is None:
             raise ValueError(
                 "Data point without data, "
                 "check if strategies returns correct values")
@@ -77,3 +75,4 @@ class Pipeline(object):
         queue = sorted(self.strategies, key=lambda step: step.output_ID)
         for step in queue:
             self.data_points.append(step.execute(self.data_points))
+        return self.data_points[-1]
