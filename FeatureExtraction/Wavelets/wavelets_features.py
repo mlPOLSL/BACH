@@ -1,8 +1,8 @@
+from collections import OrderedDict
 import numpy as np
 from scipy import stats
 import pywt
 from data_types import GreyscaleImage
-from typing import Tuple
 
 
 def get_wavelet_features(image: GreyscaleImage, mother_wavelet: str) -> dict:
@@ -24,29 +24,36 @@ def get_wavelet_features(image: GreyscaleImage, mother_wavelet: str) -> dict:
             "Image should be in greyscale, use GreyscaleImage type")
     coeffs = pywt.dwt2(image, mother_wavelet)
     cA, (cH, cV, cD) = coeffs
-    features_dict = {}
+    features_dict = OrderedDict()
     for detail_coefficients, name in zip([cH, cV, cD], ["cH", "cV", "cD"]):
-        max_value, avg_value, kurtosis, skewness = get_features_for_detail_coefficients(
-            detail_coefficients)
-        features = {mother_wavelet + "_" + name + "_max": max_value,
-                    mother_wavelet + "_" + name + "_avg": avg_value,
-                    mother_wavelet + "_" + name + "_kurtosis": kurtosis,
-                    mother_wavelet + "_" + name + "_skewness": skewness}
-        features_dict = {**features_dict, **features}
+        detail_features = get_features_for_detail_coefficients(
+            detail_coefficients, mother_wavelet, name)
+        features_dict = OrderedDict({**features_dict, **detail_features})
     return features_dict
 
 
 def get_features_for_detail_coefficients(
-        detail_coefficients: np.ndarray) -> Tuple[float, float, float, float]:
+        detail_coefficients: np.ndarray, mother_wavelet: str,
+        detail_name: str) -> OrderedDict:
     """
     Extracts wavelet coefficients from a single detail coefficients matrix.
     :param detail_coefficients: Single detail coefficients matrix taken from
         Discrete Wavelet Transform
-    :return: Values of the features: max, avg, kurtosis, skewness
+    :param mother_wavelet: Name of the mother wavelet.
+    :param detail_name: Name of the detail matrix.
+    :return: Ordered dict of the features: max, avg, kurtosis, skewness, sum
     """
+    key_prefix = mother_wavelet + "_" + detail_name + "_"
     detail_coefficients_flattened = detail_coefficients.flatten()
-    max_value = detail_coefficients_flattened.max()
-    avg_value = detail_coefficients_flattened.mean()
-    kurtosis = stats.kurtosis(detail_coefficients_flattened)
-    skewness = stats.skew(detail_coefficients_flattened)
-    return max_value, avg_value, kurtosis, skewness
+    detail_features = OrderedDict()
+    detail_features[key_prefix + "max"] = detail_coefficients_flattened.max()
+    detail_features[key_prefix + "avg"] = detail_coefficients_flattened.mean()
+    detail_features[key_prefix + "kurtosis"] = stats.kurtosis(
+        detail_coefficients_flattened)
+    detail_features[key_prefix + "skewness"] = stats.skew(
+        detail_coefficients_flattened)
+    detail_features[key_prefix + "sum"] = np.sum(detail_coefficients_flattened)
+    detail_features[key_prefix + "energy_distance"] = stats.entropy(
+        detail_coefficients_flattened)
+
+    return detail_features

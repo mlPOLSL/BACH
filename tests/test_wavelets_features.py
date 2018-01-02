@@ -1,4 +1,5 @@
 import unittest
+from collections import OrderedDict
 import numpy as np
 from FeatureExtraction.Wavelets.wavelets_features import get_wavelet_features, \
     get_features_for_detail_coefficients
@@ -14,6 +15,10 @@ class TestGettingWaveletsFeatures(unittest.TestCase):
         self.assertRaises(ValueError, get_wavelet_features, self.image,
                           "wrong_wavelet")
 
+    def test_that_returns_ordered_dict(self):
+        feature_dict = get_wavelet_features(self.image, "haar")
+        self.assertIsInstance(feature_dict, OrderedDict)
+
 
 class TestGettingDetailCoefficionsFeatures(unittest.TestCase):
     def setUp(self):
@@ -21,21 +26,31 @@ class TestGettingDetailCoefficionsFeatures(unittest.TestCase):
         self.image.reshape((20, 5))
 
     def test_that_returns_correct_max(self):
-        max, avg, kurtosis, skewness = get_features_for_detail_coefficients(
-            self.image)
-        self.assertEqual(max, 99)
+        features = get_features_for_detail_coefficients(
+            self.image, "db1", "cA")
+        self.assertEqual(features["db1_cA_max"], 99)
 
     def test_that_returns_correct_avg(self):
-        max, avg, kurtosis, skewness = get_features_for_detail_coefficients(
-            self.image)
-        self.assertEqual(avg, 49.5)
+        features = get_features_for_detail_coefficients(
+            self.image, "db1", "cA")
+        self.assertEqual(features["db1_cA_avg"], 49.5)
 
     def test_that_returns_correct_kurtosis(self):
-        max, avg, kurtosis, skewness = get_features_for_detail_coefficients(
-            self.image)
-        self.assertAlmostEqual(kurtosis, -1.2002400240024003, 9)
+        features = get_features_for_detail_coefficients(
+            self.image, "db1", "cA")
+        self.assertEqual(features["db1_cA_kurtosis"], -1.2002400240024003, 9)
 
     def test_that_returns_correct_skewness(self):
-        max, avg, kurtosis, skewness = get_features_for_detail_coefficients(
-            self.image)
-        self.assertEqual(skewness, 0)
+        features = get_features_for_detail_coefficients(
+            self.image, "db1", "cA")
+        self.assertEqual(features["db1_cA_skewness"], 0)
+
+    def test_that_returns_correct_sum(self):
+        features = get_features_for_detail_coefficients(
+            self.image, "db1", "cA")
+        self.assertEqual(features["db1_cA_sum"], 4950)
+
+    def test_that_returns_ordered_dict(self):
+        feature_dict = get_features_for_detail_coefficients(self.image, "db1",
+                                                            "cA")
+        self.assertIsInstance(feature_dict, OrderedDict)
