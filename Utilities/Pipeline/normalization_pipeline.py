@@ -22,7 +22,7 @@ def recreate_hierarchy(dir_path, new_dir_path):
 
 def create_list_of_paths_to_load(dataset_path):
     list_of_paths = []
-    for path, subdirs, files in os.walk(path_to_dataset):
+    for path, subdirs, files in os.walk(dataset_path):
         for name in files:
             list_of_paths.append(os.path.join(path, name))
     return list_of_paths
