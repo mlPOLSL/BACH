@@ -96,15 +96,15 @@ def clf_train_pipeline(clf, normalizer, path_to_dataset):
 
     return pipeline.run()
 
+if __name__ == "__main__":
+    from sklearn.neural_network import MLPClassifier
+    from sklearn.ensemble import RandomForestClassifier
+    from sklearn.preprocessing import Normalizer
 
-from sklearn.neural_network import MLPClassifier
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.preprocessing import Normalizer
+    clf = MLPClassifier(verbose=1,hidden_layer_sizes=(440))
+    normalizer = Normalizer()
+    path = "/Users/apple/Downloads/whole_images_features_no_texture_no_norm"
 
-clf = MLPClassifier(verbose=1,hidden_layer_sizes=(440))
-normalizer = Normalizer()
-path = "/Users/apple/Downloads/whole_images_features_no_texture_no_norm"
+    output = clf_train_pipeline(clf, normalizer, path).data
 
-output = clf_train_pipeline(clf, normalizer, path).data
-
-print(output[0])
+    print(output[0])
