@@ -1,11 +1,8 @@
-from typing import List
+from typing import List, Tuple
 from sklearn.preprocessing import normalize
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.neural_network import MLPClassifier
 from sklearn.model_selection import train_test_split
-from Utilities.Pipeline.normalization_pipeline import dataset_normalization_pipeline
-from Utilities.Pipeline import grid_feature_extraction
-from Utilities.Pipeline import feature_extraction_pipeline
 from sklearn.ensemble import RandomForestClassifier
 from collections import OrderedDict
 import random
@@ -21,10 +18,12 @@ NORMAL_LABEL = 3
 
 def get_features_and_label_from_file(file_path: str) -> (int, List[float]):
     """
+    Read features and label from .json file.
 
-    :param file_path:
-    :return:
+    :param file_path: path to .json file.
+    :return: Tuple[int, List[float]]
     """
+
     with open(file_path) as json_file:
         image_dict = json.load(json_file)
         label = image_dict["label"]
@@ -34,9 +33,12 @@ def get_features_and_label_from_file(file_path: str) -> (int, List[float]):
 
 def get_paths_to_features_files(features_root_directory: str) -> List[str]:
     """
+    Given a root path walks through it and all its subdirectories and saves
+    paths to all files that end with .json extension.
 
-    :param features_root_directory:
-    :return:
+    :param features_root_directory: path to root directory.
+    :return: list of paths to json files containing label and features of image
+    patch.
     """
 
     features_files_path = []
@@ -61,11 +63,15 @@ def load_features(paths_to_feature_files: List[str]):
         features.append(feature_list)
     return (labels, features)
 
-def load_images_patches_features(paths_to_feature_files: List[str]):
+def load_images_patches_features(paths_to_feature_files: List[str]) -> OrderedDict:
     """
+    Reads all the patches and groups them in a dictionary where each key stands
+    for an image and its value is a list of tuples where each tuple is one patch
+    label and features.
 
-    :param paths_to_feature_files:
-    :return:
+    :param paths_to_feature_files: absolute paths to .jsons files.
+    :return: Dictionary of images with all its patches labels and features.
+    :rtype: OrderedDict[str, Tuple[int, List[float]]
     """
     images = OrderedDict()
     for path in paths_to_feature_files:
@@ -76,12 +82,19 @@ def load_images_patches_features(paths_to_feature_files: List[str]):
         images[image_name].append((label, feature_list))
     return images
 
-def train_classifiers(classifiers, features, labels):
-    for classifier in classifiers:
-        classifier.fit(features, labels)
+def predict(test_images: OrderedDict, classifier) -> OrderedDict:
+    """
+    For a given dictionary of test images predicts the images labels using the
+    most common predicted label for all its patches.
 
-def predict(test_images, classifier):
+    :param test_images: OrderedDict where key is an image name, and value is a
+    list of Tuple[int, List[Float]], int is a label and List[Float] stores
+    features.
 
+    :param classifier: sklearn compatible classifier
+    :return: OrderedDict where key is a name of an image and its value is a
+    predicted label for it.
+    """
     image_predictions = OrderedDict()
     for image, patches in test_images.items():
         patch_predictions = []
