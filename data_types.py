@@ -77,6 +77,7 @@ class GreyscaleImage(np.ndarray):
             raise ValueError("Image cannot be empty")
         return color.rgb2grey(pixels).view(GreyscaleImage)
 
+
 class HSVImage(np.ndarray):
     def __new__(cls, rgb_image: np.ndarray):
         if not isinstance(rgb_image, np.ndarray):
@@ -84,3 +85,22 @@ class HSVImage(np.ndarray):
         if rgb_image.size == 0:
             raise ValueError("Image cannot be empty")
         return color.rgb2hsv(rgb_image)
+
+
+class ImagePatchFeatures(np.ndarray):
+    """
+    Two dimensional matrix representing an Image represented as features of
+    patches. If this object has shape (4, 90), it means that there are 4
+    patches, where each has 90 features.
+    """
+    def __new__(cls, features: np.ndarray, image_id: str, label: int):
+        obj = np.asarray(features).view(cls)
+        obj.image_id = image_id
+        obj.label = label
+        return obj
+
+    def __array_finalize__(self, obj):
+        if obj is None:
+            return
+        self.image_id = getattr(obj, 'image_id', None)
+        self.label = getattr(obj, 'label', None)
