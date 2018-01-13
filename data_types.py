@@ -84,3 +84,11 @@ class HSVImage(np.ndarray):
         if rgb_image.size == 0:
             raise ValueError("Image cannot be empty")
         return color.rgb2hsv(rgb_image)
+
+class SegmentedImage(np.ndarray):
+    def __new__(cls, image: np.ndarray):
+        if not isinstance(image, np.ndarray):
+            image = np.array(image)
+        if image.size == 0:
+            raise ValueError("Segmented image cannot be empty")
+        return np.array(image).view(SegmentedImage)
