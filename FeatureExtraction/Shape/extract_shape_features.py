@@ -1,66 +1,98 @@
-from skimage import io, color, img_as_float, filters
-from matplotlib import pyplot as plt
-from sklearn.cluster import KMeans
+from collections import OrderedDict
+import math
 import numpy as np
+from scipy import ndimage
+from skimage.measure import regionprops, label
+from data_types import SegmentedImage, GreyscaleImage
 
-path = "/Users/apple/PycharmProjects/BACH/Dataset/Test_data/3.tif"
-img = img_as_float(io.imread(path))
-lab = color.rgb2lab(img)
-L = lab[:, :, 0]
-AB = lab[:, :, 1:]
 
-kmeans = KMeans(3)
-print(AB.shape)
-output = kmeans.fit(np.reshape(AB, (AB.shape[0] * AB.shape[1], AB.shape[2])))
-labels = output.labels_
-labels = np.reshape(labels, (1536, 2048, 1))
-clusters = [np.zeros(img.shape) for x in range(0,3)]
-for x in range(0, img.shape[0]):
-    for y in range(0, img.shape[1]):
-        if labels[x, y] == 0:
-            clusters[0][x, y] = img[x, y]
-            clusters[1][x, y] = 0
-            clusters[2][x, y] = 0
-        if labels[x, y] == 1:
-            clusters[0][x, y] = 0
-            clusters[1][x, y] = img[x, y]
-            clusters[2][x, y] = 0
-        if labels[x, y] == 2:
-            clusters[0][x, y] = 0
-            clusters[1][x, y] = 0
-            clusters[2][x, y] = img[x, y]
+def extract_shape_features(segmented_image: SegmentedImage) -> OrderedDict:
+    segmented_image = GreyscaleImage(segmented_image)
+    mask = segmented_image[...] != 0
+    masked = segmented_image.copy()
+    masked[mask] = 255
+    labels = label(masked)
 
-plt.imshow(clusters[0])
-plt.show()
-plt.imshow(clusters[1])
-plt.show()
-plt.imshow(clusters[2])
-plt.show()
+    props = regionprops(labels)
+    number_of_cells = count_cells(props, 50)
+    total_area = calculate_total_area_of_cells(props, 50)
+    fill_coefficient = total_area / (
+        segmented_image.shape[0] * segmented_image.shape[1])
+    min_area, mean_area, max_area, std_area = get_area_features(props, 50)
+    min_perimeter, mean_perimeter, max_perimeter, std_perimeter = get_perimeter_features(
+        props, 50)
+    min_eccentricity, mean_eccentricity, max_eccentricity, std_eccentricity = get_eccentricity_features(
+        props, 50)
+    min_solidity, mean_solidity, max_solidity, std_solidity = get_solidity_features(
+        props, 50)
 
-clusters_mean_centers = [np.mean(center) for center in output.cluster_centers_]
-blue_cluster_index = clusters_mean_centers.index(
-    np.min(clusters_mean_centers))
+    features_dict = OrderedDict()
+    features_dict["number_of_cells"] = number_of_cells
+    features_dict["fill_coefficient"] = fill_coefficient
+    features_dict["min_area"] = min_area
+    features_dict["mean_area"] = mean_area
+    features_dict["max_area"] = max_area
+    features_dict["std_area"] = std_area
+    features_dict["min_perimeter"] = min_perimeter
+    features_dict["mean_perimeter"] = mean_perimeter
+    features_dict["max_perimeter"] = max_perimeter
+    features_dict["std_perimeter"] = std_perimeter
+    features_dict["min_eccentricity"] = min_eccentricity
+    features_dict["mean_eccentricity"] = mean_eccentricity
+    features_dict["max_eccentricity"] = max_eccentricity
+    features_dict["std_eccentricity"] = std_eccentricity
+    features_dict["min_solidity"] = min_solidity
+    features_dict["mean_solidity"] = mean_solidity
+    features_dict["max_solidity"] = max_solidity
+    features_dict["std_solidity"] = std_solidity
 
-print(blue_cluster_index)
-print(output.cluster_centers_)
-print(clusters_mean_centers)
-brightness_threshold = filters.threshold_otsu(L)
-L = clusters[blue_cluster_index][:, :, 0]
-L = L < brightness_threshold
+    return features_dict
 
-segmented = np.zeros(img.shape)
-for x in range(0, img.shape[0]):
-    for y in range(0, img.shape[1]):
-        if L[x,y] == 0:
-            segmented[x,y] = 0
-        else:
-            segmented[x,y] =  clusters[blue_cluster_index][x,y]
 
-io.imsave("1.tif",img)
-io.imsave("1segmented.tif",segmented)
+def count_cells(props, min_cell_area):
+    return len([region for region in props if region.area > min_cell_area])
 
-plt.imshow(img)
-plt.show()
-plt.imshow(segmented)
-plt.show()
+
+def calculate_total_area_of_cells(props, min_cell_area):
+    return sum(
+        [region.area for region in props if region.area > min_cell_area])
+
+
+def get_area_features(props, min_cell_area):
+    areas = [region.area for region in props if region.area > min_cell_area]
+    min_area = np.amin(areas)
+    mean_area = np.mean(areas)
+    max_area = np.amax(areas)
+    std_area = np.std(areas)
+    return min_area, mean_area, max_area, std_area
+
+
+def get_perimeter_features(props, min_cell_area):
+    perimeters = [region.perimeter for region in props if
+                  region.area > min_cell_area]
+    min_perimeter = np.amin(perimeters)
+    mean_perimeter = np.mean(perimeters)
+    max_perimeter = np.amax(perimeters)
+    std_perimeter = np.std(perimeters)
+    return min_perimeter, mean_perimeter, max_perimeter, std_perimeter
+
+
+def get_eccentricity_features(props, min_cell_area):
+    eccentrities = [region.eccentricity for region in props if
+                    region.area > min_cell_area]
+    min_eccentricity = np.amin(eccentrities)
+    mean_eccentricity = np.mean(eccentrities)
+    max_eccentricity = np.amax(eccentrities)
+    std_eccentricity = np.std(eccentrities)
+    return min_eccentricity, mean_eccentricity, max_eccentricity, std_eccentricity
+
+
+def get_solidity_features(props, min_cell_area):
+    solidities = [region.eccentricity for region in props if
+                  region.area > min_cell_area]
+    min_solidity = np.amin(solidities)
+    mean_solidity = np.mean(solidities)
+    max_solidity = np.amax(solidities)
+    std_solidity = np.std(solidities)
+    return min_solidity, mean_solidity, max_solidity, std_solidity
 
