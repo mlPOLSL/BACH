@@ -1,12 +1,28 @@
 from collections import OrderedDict
-import math
 import numpy as np
-from scipy import ndimage
 from skimage.measure import regionprops, label
 from data_types import SegmentedImage, GreyscaleImage
 
 
-def extract_shape_features(segmented_image: SegmentedImage) -> OrderedDict:
+def extract_shape_features(segmented_image: SegmentedImage,
+                           minimal_cell_size: int = 50) -> OrderedDict:
+    """
+    Function for extracting shape features from a image with segmented blue nuclei.
+    :param segmented_image: Image with segmented blue nuclei.
+    :param minimal_cell_size: Minimal are of cell to be counted
+    :return: Ordered dict with features:
+    number_of_cells;
+    total area of cells;
+    coefficient of total are of cells and total area of an image;
+    min, mean, max, std of area;
+    min, mean, max, std of perimeter;
+    min, mean, max, std of eccentricity;
+    min, mean, max, std of solidity;
+    """
+    if not isinstance(segmented_image, SegmentedImage):
+        raise TypeError(
+            "Image should be segmentation, use SegmentedImage type")
+
     segmented_image = GreyscaleImage(segmented_image)
     mask = segmented_image[...] != 0
     masked = segmented_image.copy()
@@ -14,24 +30,42 @@ def extract_shape_features(segmented_image: SegmentedImage) -> OrderedDict:
     labels = label(masked)
 
     props = regionprops(labels)
-    number_of_cells = count_cells(props, 50)
-    total_area = calculate_total_area_of_cells(props, 50)
+    number_of_cells = count_cells(props, minimal_cell_size)
+    try:
+        total_area = calculate_total_area_of_cells(props, minimal_cell_size)
+    except ValueError:
+        total_area = 0
     fill_coefficient = total_area / (
         segmented_image.shape[0] * segmented_image.shape[1])
-    min_area, mean_area, max_area, std_area = get_area_features(props, 50)
-    min_perimeter, mean_perimeter, max_perimeter, std_perimeter = get_perimeter_features(
-        props, 50)
-    min_eccentricity, mean_eccentricity, max_eccentricity, std_eccentricity = get_eccentricity_features(
-        props, 50)
-    min_solidity, mean_solidity, max_solidity, std_solidity = get_solidity_features(
-        props, 50)
+    try:
+        min_area, mean_area, max_area, std_area = get_area_features(props,
+                                                                    minimal_cell_size)
+    except ValueError:
+        min_area, mean_area, max_area, std_area = (0, 0, 0, 0)
+    try:
+        min_perimeter, mean_perimeter, max_perimeter, std_perimeter = get_perimeter_features(
+            props, minimal_cell_size)
+    except ValueError:
+        min_perimeter, mean_perimeter, max_perimeter, std_perimeter = (
+            0, 0, 0, 0)
+    try:
+        min_eccentricity, mean_eccentricity, max_eccentricity, std_eccentricity = get_eccentricity_features(
+            props, minimal_cell_size)
+    except ValueError:
+        min_eccentricity, mean_eccentricity, max_eccentricity, std_eccentricity = (
+            0, 0, 0, 0)
+    try:
+        min_solidity, mean_solidity, max_solidity, std_solidity = get_solidity_features(
+            props, minimal_cell_size)
+    except ValueError:
+        min_solidity, mean_solidity, max_solidity, std_solidity = (0, 0, 0, 0)
 
     features_dict = OrderedDict()
     features_dict["number_of_cells"] = number_of_cells
     features_dict["fill_coefficient"] = fill_coefficient
-    features_dict["min_area"] = min_area
-    features_dict["mean_area"] = mean_area
-    features_dict["max_area"] = max_area
+    features_dict["min_area"] = float(min_area)
+    features_dict["mean_area"] = float(mean_area)
+    features_dict["max_area"] = float(max_area)
     features_dict["std_area"] = std_area
     features_dict["min_perimeter"] = min_perimeter
     features_dict["mean_perimeter"] = mean_perimeter
@@ -50,15 +84,36 @@ def extract_shape_features(segmented_image: SegmentedImage) -> OrderedDict:
 
 
 def count_cells(props, min_cell_area):
+    """
+    Function for counting number of cells (regions).
+    :param props: Regions taken from regionprops.
+    :param min_cell_area: Threshold for a size of a cell to eliminate
+    oversegmented regions.
+    :return: Number of cells.
+    """
     return len([region for region in props if region.area > min_cell_area])
 
 
 def calculate_total_area_of_cells(props, min_cell_area):
+    """
+    Function for calculation of total area of cells (regions).
+    :param props: Regions taken from regionprops.
+    :param min_cell_area: Threshold for a size of a cell to eliminate
+    oversegmented regions.
+    :return: Total area of cells.
+    """
     return sum(
         [region.area for region in props if region.area > min_cell_area])
 
 
 def get_area_features(props, min_cell_area):
+    """
+    Function for calculation of area features of cells.
+    :param props: Regions taken from regionprops.
+    :param min_cell_area: Threshold for a size of a cell to eliminate
+    oversegmented regions.
+    :return: Min, mean, max, std of areas of all cells
+    """
     areas = [region.area for region in props if region.area > min_cell_area]
     min_area = np.amin(areas)
     mean_area = np.mean(areas)
@@ -68,6 +123,13 @@ def get_area_features(props, min_cell_area):
 
 
 def get_perimeter_features(props, min_cell_area):
+    """
+    Function for calculation of perimeter features of cells.
+    :param props: Regions taken from regionprops.
+    :param min_cell_area: Threshold for a size of a cell to eliminate
+    oversegmented regions.
+    :return: Min, mean, max, std of perimeters of all cells
+    """
     perimeters = [region.perimeter for region in props if
                   region.area > min_cell_area]
     min_perimeter = np.amin(perimeters)
@@ -78,6 +140,13 @@ def get_perimeter_features(props, min_cell_area):
 
 
 def get_eccentricity_features(props, min_cell_area):
+    """
+    Function for calculation of eccentricity features of cells.
+    :param props: Regions taken from regionprops.
+    :param min_cell_area: Threshold for a size of a cell to eliminate
+    oversegmented regions.
+    :return: Min, mean, max, std of eccentricity of all cells
+    """
     eccentrities = [region.eccentricity for region in props if
                     region.area > min_cell_area]
     min_eccentricity = np.amin(eccentrities)
@@ -88,6 +157,13 @@ def get_eccentricity_features(props, min_cell_area):
 
 
 def get_solidity_features(props, min_cell_area):
+    """
+    Function for calculation of solidity features of cells.
+    :param props: Regions taken from regionprops.
+    :param min_cell_area: Threshold for a size of a cell to eliminate
+    oversegmented regions.
+    :return: Min, mean, max, std of solidity of all cells
+    """
     solidities = [region.eccentricity for region in props if
                   region.area > min_cell_area]
     min_solidity = np.amin(solidities)
@@ -95,4 +171,3 @@ def get_solidity_features(props, min_cell_area):
     max_solidity = np.amax(solidities)
     std_solidity = np.std(solidities)
     return min_solidity, mean_solidity, max_solidity, std_solidity
-
