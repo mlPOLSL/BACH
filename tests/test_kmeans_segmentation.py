@@ -4,7 +4,7 @@ from Segmentation.kmeans_segmentation import segment_blue_nuclei
 from data_types import SegmentedImage
 
 
-class TestShapeFeatures(unittest.TestCase):
+class TestKMeansSegmentation(unittest.TestCase):
     def setUp(self):
         self.image = np.array(
             [[[193., 11., 209.], [193., 114., 209.], [255., 255., 255.]],

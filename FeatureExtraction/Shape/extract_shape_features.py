@@ -31,34 +31,22 @@ def extract_shape_features(segmented_image: SegmentedImage,
 
     props = regionprops(labels)
     number_of_cells = count_cells(props, minimal_cell_size)
-    try:
-        total_area = calculate_total_area_of_cells(props, minimal_cell_size)
-    except ValueError:
-        total_area = 0
+
+    total_area = calculate_total_area_of_cells(props, minimal_cell_size)
+
     fill_coefficient = total_area / (
         segmented_image.shape[0] * segmented_image.shape[1])
-    try:
-        min_area, mean_area, max_area, std_area = get_area_features(props,
-                                                                    minimal_cell_size)
-    except ValueError:
-        min_area, mean_area, max_area, std_area = (0, 0, 0, 0)
-    try:
-        min_perimeter, mean_perimeter, max_perimeter, std_perimeter = get_perimeter_features(
-            props, minimal_cell_size)
-    except ValueError:
-        min_perimeter, mean_perimeter, max_perimeter, std_perimeter = (
-            0, 0, 0, 0)
-    try:
-        min_eccentricity, mean_eccentricity, max_eccentricity, std_eccentricity = get_eccentricity_features(
-            props, minimal_cell_size)
-    except ValueError:
-        min_eccentricity, mean_eccentricity, max_eccentricity, std_eccentricity = (
-            0, 0, 0, 0)
-    try:
-        min_solidity, mean_solidity, max_solidity, std_solidity = get_solidity_features(
-            props, minimal_cell_size)
-    except ValueError:
-        min_solidity, mean_solidity, max_solidity, std_solidity = (0, 0, 0, 0)
+    min_area, mean_area, max_area, std_area = get_area_features(props,
+                                                                minimal_cell_size)
+
+    min_perimeter, mean_perimeter, max_perimeter, std_perimeter = get_perimeter_features(
+        props, minimal_cell_size)
+
+    min_eccentricity, mean_eccentricity, max_eccentricity, std_eccentricity = get_eccentricity_features(
+        props, minimal_cell_size)
+
+    min_solidity, mean_solidity, max_solidity, std_solidity = get_solidity_features(
+        props, minimal_cell_size)
 
     features_dict = OrderedDict()
     features_dict["number_of_cells"] = number_of_cells
@@ -102,8 +90,11 @@ def calculate_total_area_of_cells(props, min_cell_area):
     oversegmented regions.
     :return: Total area of cells.
     """
-    return sum(
-        [region.area for region in props if region.area > min_cell_area])
+    try:
+        return sum(
+            [region.area for region in props if region.area > min_cell_area])
+    except ValueError:
+        return 0
 
 
 def get_area_features(props, min_cell_area):
@@ -114,12 +105,16 @@ def get_area_features(props, min_cell_area):
     oversegmented regions.
     :return: Min, mean, max, std of areas of all cells
     """
-    areas = [region.area for region in props if region.area > min_cell_area]
-    min_area = np.amin(areas)
-    mean_area = np.mean(areas)
-    max_area = np.amax(areas)
-    std_area = np.std(areas)
-    return min_area, mean_area, max_area, std_area
+    try:
+        areas = [region.area for region in props if
+                 region.area > min_cell_area]
+        min_area = np.amin(areas)
+        mean_area = np.mean(areas)
+        max_area = np.amax(areas)
+        std_area = np.std(areas)
+        return min_area, mean_area, max_area, std_area
+    except ValueError:
+        return 0, 0, 0, 0
 
 
 def get_perimeter_features(props, min_cell_area):
@@ -130,13 +125,16 @@ def get_perimeter_features(props, min_cell_area):
     oversegmented regions.
     :return: Min, mean, max, std of perimeters of all cells
     """
-    perimeters = [region.perimeter for region in props if
-                  region.area > min_cell_area]
-    min_perimeter = np.amin(perimeters)
-    mean_perimeter = np.mean(perimeters)
-    max_perimeter = np.amax(perimeters)
-    std_perimeter = np.std(perimeters)
-    return min_perimeter, mean_perimeter, max_perimeter, std_perimeter
+    try:
+        perimeters = [region.perimeter for region in props if
+                      region.area > min_cell_area]
+        min_perimeter = np.amin(perimeters)
+        mean_perimeter = np.mean(perimeters)
+        max_perimeter = np.amax(perimeters)
+        std_perimeter = np.std(perimeters)
+        return min_perimeter, mean_perimeter, max_perimeter, std_perimeter
+    except ValueError:
+        return 0, 0, 0, 0
 
 
 def get_eccentricity_features(props, min_cell_area):
@@ -147,13 +145,16 @@ def get_eccentricity_features(props, min_cell_area):
     oversegmented regions.
     :return: Min, mean, max, std of eccentricity of all cells
     """
-    eccentrities = [region.eccentricity for region in props if
-                    region.area > min_cell_area]
-    min_eccentricity = np.amin(eccentrities)
-    mean_eccentricity = np.mean(eccentrities)
-    max_eccentricity = np.amax(eccentrities)
-    std_eccentricity = np.std(eccentrities)
-    return min_eccentricity, mean_eccentricity, max_eccentricity, std_eccentricity
+    try:
+        eccentrities = [region.eccentricity for region in props if
+                        region.area > min_cell_area]
+        min_eccentricity = np.amin(eccentrities)
+        mean_eccentricity = np.mean(eccentrities)
+        max_eccentricity = np.amax(eccentrities)
+        std_eccentricity = np.std(eccentrities)
+        return min_eccentricity, mean_eccentricity, max_eccentricity, std_eccentricity
+    except ValueError:
+        return 0, 0, 0, 0
 
 
 def get_solidity_features(props, min_cell_area):
@@ -164,10 +165,13 @@ def get_solidity_features(props, min_cell_area):
     oversegmented regions.
     :return: Min, mean, max, std of solidity of all cells
     """
-    solidities = [region.eccentricity for region in props if
-                  region.area > min_cell_area]
-    min_solidity = np.amin(solidities)
-    mean_solidity = np.mean(solidities)
-    max_solidity = np.amax(solidities)
-    std_solidity = np.std(solidities)
-    return min_solidity, mean_solidity, max_solidity, std_solidity
+    try:
+        solidities = [region.eccentricity for region in props if
+                      region.area > min_cell_area]
+        min_solidity = np.amin(solidities)
+        mean_solidity = np.mean(solidities)
+        max_solidity = np.amax(solidities)
+        std_solidity = np.std(solidities)
+        return min_solidity, mean_solidity, max_solidity, std_solidity
+    except ValueError:
+        return 0, 0, 0, 0
