@@ -1,6 +1,7 @@
 import unittest
 import numpy as np
-from data_types import Patch, WindowSize, Stride, GreyscaleImage, HSVImage
+from data_types import Patch, WindowSize, Stride, GreyscaleImage, HSVImage, \
+    SegmentedImage
 
 
 class TestPatch(unittest.TestCase):
@@ -42,7 +43,7 @@ class TestStride(unittest.TestCase):
 
 
 class TestGreyscaleImage(unittest.TestCase):
-    def test_if_will_be_converted_to_numpy(self):
+    def test_if_converts_to_numpy(self):
         image = GreyscaleImage([[[1, 2, 3], [1, 2, 3], [1, 2, 3]],
                                 [[1, 2, 3], [1, 2, 3], [1, 2, 3]],
                                 [[1, 2, 3], [1, 2, 3], [1, 2, 3]]])
@@ -52,23 +53,36 @@ class TestGreyscaleImage(unittest.TestCase):
         with self.assertRaises(ValueError):
             GreyscaleImage([])
 
-    def test_if_will_be_converted_to_grayscale_shape(self):
+    def test_if_converts_to_grayscale_shape(self):
         image = GreyscaleImage([[[1, 2, 3], [1, 2, 3], [1, 2, 3]],
                                 [[1, 2, 3], [1, 2, 3], [1, 2, 3]],
                                 [[1, 2, 3], [1, 2, 3], [1, 2, 3]]])
         self.assertTrue(image.shape == (3, 3))
 
-    def test_if_will_be_converted_to_grayscale_values(self):
+    def test_if_converts_to_grayscale_values(self):
         image = GreyscaleImage([[[1, 2, 3], [1, 2, 3], [1, 2, 3]],
                                 [[1, 2, 3], [1, 2, 3], [1, 2, 3]],
                                 [[1, 2, 3], [1, 2, 3], [1, 2, 3]]])
         self.assertTrue(all(0.0 <= x <= 1.0 for x in image.flatten()))
 
+
 class TestHSVImage(unittest.TestCase):
     def test_if_coverts_to_numpy(self):
-        image = HSVImage([[[1,2,3],[4,5,6]]])
-        self.assertIsInstance(image,np.ndarray)
+        image = HSVImage([[[1, 2, 3], [4, 5, 6]]])
+        self.assertIsInstance(image, np.ndarray)
 
     def test_if_cannot_be_empty(self):
         with self.assertRaises(ValueError):
             HSVImage([])
+
+
+class TestSegmentedImage(unittest.TestCase):
+    def test_if_converts_to_numpy(self):
+        image = SegmentedImage([[[1, 2, 3], [1, 2, 3], [1, 2, 3]],
+                                [[1, 2, 3], [1, 2, 3], [1, 2, 3]],
+                                [[1, 2, 3], [1, 2, 3], [1, 2, 3]]])
+        self.assertIsInstance(image, np.ndarray)
+
+    def test_if_cannot_be_empty(self):
+        with self.assertRaises(ValueError):
+            SegmentedImage([])
