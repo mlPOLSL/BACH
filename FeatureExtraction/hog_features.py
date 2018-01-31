@@ -23,9 +23,6 @@ def extract_hog_features(greyscale_image: GreyscaleImage, orientations=9,
     cells_in_block = cells_per_block[0] * cells_per_block[1]
     number_of_features = orientations * cells_in_block * positions_in_x * \
                          positions_in_y
-    warning("The number of hog features will "
-            "be around: {}".format(number_of_features))
-
     hog_features = hog(greyscale_image, orientations, pixels_per_cell,
                        cells_per_block, block_norm)
     features = OrderedDict()
