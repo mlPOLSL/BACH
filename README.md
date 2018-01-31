@@ -10,3 +10,5 @@ To segment the image, execute the classify_image_py with the path to the image a
 
 should return 
 ```sample_image.tif,Invasive```
+
+Tested with Python 3.6.3
