@@ -27,7 +27,7 @@ INSITU_WEIGHT = 0.8
 INVASIVE_WEIGHT = 1.0
 
 LABELS_IMPORTANCE = [INVASIVE_LABEL, INSITU_LABEL, BENIGN_LABEL, NORMAL_LABEL]
-LABELS = ['Benign', 'InSitu', 'Invsive', 'Normal']
+LABELS = ['Benign', 'InSitu', 'Invasive', 'Normal']
 WEIGHTS = [BENIGN_WEIGHT, INSITU_WEIGHT, INVASIVE_WEIGHT, NORMAL_WEIGHT]
 HOG_ORIENTATIONS = 9
 HOG_PIXELS_PER_CELL = [(300, 300), (200, 200), (100, 100)]
@@ -36,28 +36,24 @@ HOG_CELLS_PER_BLOCK = [(2, 2), (2, 2), (2, 2)]
 
 def classify_image(path: str, echo: bool = False):
     clf = []
-    clf.append(joblib.load(
-        'not_normalized_repaired_random_forest1x1.pkl'))
-    clf.append(joblib.load(
-        'not_normalized_repaired_random_forest2x2.pkl'))
-    clf.append(joblib.load(
-        'not_normalized_repaired_random_forest4x4.pkl'))
-    labels = ['Benign', 'InSitu', 'Invsive', 'Normal']
+    clf.append(joblib.load('random_forest1x1.pkl'))
+    clf.append(joblib.load('random_forest2x2.pkl'))
+    clf.append(joblib.load('random_forest4x4.pkl'))
+    labels = ['Benign', 'InSitu', 'Invasive', 'Normal']
     sums = [0., 0., 0., 0.]
     image = io.imread(path)
     segmented = segment_blue_nuclei(image)
     if echo:
         print("Segmentation done")
-    image = img_as_float(image)
     grids = [divide_into_patches(image, x, x) for x in [1, 2, 4]]
     grids_segmented = [divide_into_patches(segmented, x, x) for x in
-                       [1, 2, 4, 8]]
+                       [1, 2, 4]]
     for index_grid, grid in enumerate(grids):
         for index_patch, patch in enumerate(grid):
             feature_dict = OrderedDict()
             greyscale = GreyscaleImage(copy(patch))
             feature_dict.update(get_wavelet_features(greyscale, "db1"))
-            feature_dict.update(extract_color_features(HSVImage(copy(patch))))
+            feature_dict.update(extract_color_features(copy(patch)))
             segmented_patch = SegmentedImage(
                 grids_segmented[index_grid][index_patch])
             feature_dict.update(extract_shape_features(segmented_patch))
@@ -81,9 +77,9 @@ def classify_image(path: str, echo: bool = False):
                 break
     else:
         final_prediction = max_values_indexes[0]
-    print("{},{}".format(os.path.basename(path), labels[final_prediction]))
-    return labels[final_prediction]
+    return os.path.basename(path), labels[final_prediction]
 
 
 if __name__ == "__main__":
-    classify_image(sys.argv[1])
+    filename, prediction = classify_image(sys.argv[1], True)
+    print("{},{}".format(filename, prediction))
