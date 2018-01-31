@@ -82,6 +82,8 @@ def classify_image(path: str, echo: bool = False):
     else:
         final_prediction = max_values_indexes[0]
     print("{},{}".format(os.path.basename(path), labels[final_prediction]))
+    return labels[final_prediction]
+
 
 if __name__ == "__main__":
     classify_image(sys.argv[1])
