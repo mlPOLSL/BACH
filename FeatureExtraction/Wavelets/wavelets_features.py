@@ -53,7 +53,5 @@ def get_features_for_detail_coefficients(
     detail_features[key_prefix + "skewness"] = stats.skew(
         detail_coefficients_flattened)
     detail_features[key_prefix + "sum"] = np.sum(detail_coefficients_flattened)
-    detail_features[key_prefix + "energy_distance"] = stats.entropy(
-        detail_coefficients_flattened)
 
     return detail_features

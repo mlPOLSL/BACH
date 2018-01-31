@@ -175,6 +175,6 @@ def extract_tamuras_features(image: GreyscaleImage) -> OrderedDict:
     coarseness_ = coarseness(image)
     contrast_ = contrast(image)
     features = OrderedDict()
-    features['coarseness'] = coarseness_
-    features['contrast'] = contrast_
+    features['coarseness'] = float(coarseness_)
+    features['contrast'] = float(contrast_)
     return features
