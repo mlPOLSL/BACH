@@ -1,9 +1,11 @@
 import os
-import numpy as np
+import sys
 from copy import copy
+from collections import OrderedDict
+import numpy as np
 from skimage import io, img_as_float
 from sklearn.externals import joblib
-from collections import OrderedDict
+
 from DataPreprocessing.Grid.grid import divide_into_patches
 from FeatureExtraction.Color.color_features import extract_color_features
 from FeatureExtraction.Texture.tamuras_features import extract_tamuras_features
@@ -32,28 +34,24 @@ HOG_PIXELS_PER_CELL = [(300, 300), (200, 200), (100, 100)]
 HOG_CELLS_PER_BLOCK = [(2, 2), (2, 2), (2, 2)]
 
 
-def classify_image(path: str):
+def classify_image(path: str, echo: bool = False):
     clf = []
     clf.append(joblib.load(
-        'C:\\Users\\user\PycharmProjects\BACH'
-        '\\not_normalized_repaired_random_forest1x1.pkl'))
+        'not_normalized_repaired_random_forest1x1.pkl'))
     clf.append(joblib.load(
-        'C:\\Users\\user\PycharmProjects\BACH'
-        '\\not_normalized_repaired_random_forest2x2.pkl'))
+        'not_normalized_repaired_random_forest2x2.pkl'))
     clf.append(joblib.load(
-        'C:\\Users\\user\PycharmProjects\BACH'
-        '\\not_normalized_repaired_random_forest4x4.pkl'))
+        'not_normalized_repaired_random_forest4x4.pkl'))
     labels = ['Benign', 'InSitu', 'Invsive', 'Normal']
     sums = [0., 0., 0., 0.]
     image = io.imread(path)
-    print("segment")
     segmented = segment_blue_nuclei(image)
+    if echo:
+        print("Segmentation done")
     image = img_as_float(image)
     grids = [divide_into_patches(image, x, x) for x in [1, 2, 4]]
     grids_segmented = [divide_into_patches(segmented, x, x) for x in
                        [1, 2, 4, 8]]
-
-    print("classif")
     for index_grid, grid in enumerate(grids):
         for index_patch, patch in enumerate(grid):
             feature_dict = OrderedDict()
@@ -64,24 +62,26 @@ def classify_image(path: str):
                 grids_segmented[index_grid][index_patch])
             feature_dict.update(extract_shape_features(segmented_patch))
             feature_dict.update(extract_tamuras_features(greyscale))
-            feature_dict.update(extract_hog_features(greyscale, HOG_ORIENTATIONS,
-                                                     HOG_PIXELS_PER_CELL[index_grid],
-                                                     HOG_CELLS_PER_BLOCK[index_grid]))
+            feature_dict.update(
+                extract_hog_features(greyscale, HOG_ORIENTATIONS,
+                                     HOG_PIXELS_PER_CELL[index_grid],
+                                     HOG_CELLS_PER_BLOCK[index_grid]))
             features = [feature_dict[key] for key in feature_dict]
             response = clf[index_grid].predict(
                 np.array(features).reshape((1, -1)))
             sums[int(response)] += WEIGHTS[int(response)]
     max_values_indexes = [index for index, val in enumerate(sums) if
                           val == max(sums)]
-    if len(max_values_indexes) > 1:         # case of a draw
+    if echo:
+        print("Feature extraction done")
+    if len(max_values_indexes) > 1:  # case of a draw
         for label in LABELS_IMPORTANCE:
             if label in max_values_indexes:
                 final_prediction = label
                 break
     else:
         final_prediction = max_values_indexes[0]
-    print("{},{}".format(os.path.basename(path),labels[final_prediction]))
+    print("{},{}".format(os.path.basename(path), labels[final_prediction]))
 
-classify_image(
-    "C:\\Users\\user\Desktop\ICIAR2018_BACH_Challenge\Photos\Invasive\\iv001"
-    ".tif")
+if __name__ == "__main__":
+    classify_image(sys.argv[1])
