@@ -116,8 +116,8 @@ def dataset_normalization_pipeline(path_to_dataset, normalized_dir_path):
 
     pipeline.run()
 
+if __name__ == "__main__":
+    path_to_dataset = "/Users/apple/PycharmProjects/BACH/Dataset/iciar_test/Photos"
+    norm_dir_path = "/Users/apple/PycharmProjects/BACH/Dataset/iciar_test/Normalized"
 
-path_to_dataset = "/Users/apple/PycharmProjects/BACH/Dataset/iciar_test/Photos"
-norm_dir_path = "/Users/apple/PycharmProjects/BACH/Dataset/iciar_test/Normalized"
-
-dataset_normalization_pipeline(path_to_dataset, norm_dir_path)
+    dataset_normalization_pipeline(path_to_dataset, norm_dir_path)

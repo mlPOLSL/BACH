@@ -205,19 +205,20 @@ def dataset_feature_extraction(path_to_dataset, feature_dir_path,
 
     pipeline.run()
 
-import time
-img_path = "/Users/apple/PycharmProjects/BACH/Dataset/iciar_test/Normalized/Benign/b001.tif"
-features_path = "/Users/apple/PycharmProjects/BACH/Dataset/iciar_test/whole_images_features/Benign/b001.json"
-mother_wavelet1 = "db1"
-mother_wavelet2 = "db2"
-distance = [1, 3]
-angle = [0, np.pi / 2, np.pi, 3. * np.pi / 2.]
-label = 0
-orientations = 9
-pixels_per_cell = (300, 300)
-cells_per_block = (4, 4)
-time0 = time.time()
-feature_extraction_pipeline(img_path, features_path, mother_wavelet1, distance,
-                            angle, 1, orientations, pixels_per_cell,
-                            cells_per_block,mother_wavelet2)
-print(time.time() - time.time())
+if __name__ == "__main__":
+    import time
+    img_path = "/Users/apple/PycharmProjects/BACH/Dataset/iciar_test/Normalized/Benign/b001.tif"
+    features_path = "/Users/apple/PycharmProjects/BACH/Dataset/iciar_test/whole_images_features/Benign/b001.json"
+    mother_wavelet1 = "db1"
+    mother_wavelet2 = "db2"
+    distance = [1, 3]
+    angle = [0, np.pi / 2, np.pi, 3. * np.pi / 2.]
+    label = 0
+    orientations = 9
+    pixels_per_cell = (300, 300)
+    cells_per_block = (4, 4)
+    time0 = time.time()
+    feature_extraction_pipeline(img_path, features_path, mother_wavelet1, distance,
+                                angle, 1, orientations, pixels_per_cell,
+                                cells_per_block,mother_wavelet2)
+    print(time.time() - time.time())

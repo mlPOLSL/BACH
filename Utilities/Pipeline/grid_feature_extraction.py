@@ -218,16 +218,17 @@ def dataset_feature_extraction(path_to_dataset, feature_dir_path,
 
     pipeline.run()
 
-#
-img_path = "/Users/apple/PycharmProjects/BACH/Dataset/iciar_test/Photos"
-features_path = "/Users/apple/PycharmProjects/BACH/Dataset/iciar_test/2x2_patch_features"
-mother_wavelet = "db1"
-distance = [1, 3]
-angle = [0, np.pi / 2, np.pi, 3. * np.pi / 2.]
-label = 0
-orientations = 9
-pixels_per_cell = (300, 300)
-cells_per_block = (4, 4)
-dataset_feature_extraction(img_path, features_path, mother_wavelet, distance,
-                           angle, orientations, pixels_per_cell,
-                           cells_per_block)
+
+if __name__ == "__main__":
+    img_path = "/Users/apple/PycharmProjects/BACH/Dataset/iciar_test/Photos"
+    features_path = "/Users/apple/PycharmProjects/BACH/Dataset/iciar_test/2x2_patch_features"
+    mother_wavelet = "db1"
+    distance = [1, 3]
+    angle = [0, np.pi / 2, np.pi, 3. * np.pi / 2.]
+    label = 0
+    orientations = 9
+    pixels_per_cell = (300, 300)
+    cells_per_block = (4, 4)
+    dataset_feature_extraction(img_path, features_path, mother_wavelet, distance,
+                               angle, orientations, pixels_per_cell,
+                               cells_per_block)
