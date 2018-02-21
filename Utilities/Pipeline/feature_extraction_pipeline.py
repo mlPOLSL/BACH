@@ -7,7 +7,7 @@ from FeatureExtraction.Color.color_features import extract_color_features
 from FeatureExtraction.Wavelets.wavelets_features import get_wavelet_features
 from FeatureExtraction.Texture.texture_features import extract_texture_features
 from FeatureExtraction.hog_features import extract_hog_features
-
+from FeatureExtraction.Texture.tamuras_features import extract_tamuras_features
 from Utilities.Pipeline.pipeline import PipelineStrategy, PipelineDataPoint, \
     Pipeline
 from Utilities.save_features import load_image_info, save_image_info
@@ -56,18 +56,19 @@ def create_list_of_paths_to_save(list_of_paths_to_load, dataset_path,
 
 
 def feature_extraction_pipeline(image_file_path, features_file_path,
-                                mother_wavelet, distances, angles, label,
+                                mother_wavelet1, distances, angles, label,
                                 orientations, pixels_per_cell,
-                                cells_per_block):
+                                cells_per_block,mother_wavelet2):
     data_point10 = PipelineDataPoint(image_file_path, 10)
     data_point11 = PipelineDataPoint(features_file_path, 11)
-    data_point12 = PipelineDataPoint(mother_wavelet, 12)
+    data_point12 = PipelineDataPoint(mother_wavelet1, 12)
     data_point13 = PipelineDataPoint(distances, 13)
     data_point14 = PipelineDataPoint(angles, 14)
     data_point15 = PipelineDataPoint(label, 15)
     data_point16 = PipelineDataPoint(orientations, 16)
     data_point17 = PipelineDataPoint(pixels_per_cell, 17)
     data_point18 = PipelineDataPoint(cells_per_block, 18)
+    data_point19 = PipelineDataPoint(mother_wavelet2, 19)
 
     def load_image_file(input):
         return io.imread(input[0])
@@ -92,9 +93,9 @@ def feature_extraction_pipeline(image_file_path, features_file_path,
     def color_features_extraction(input):
         return extract_color_features(input[0])
 
-    def texture_features_extraction(input):
-        uint = NumpyImageUINT8(input[0])
-        return extract_texture_features(uint, input[1], input[2])
+    def tamura_features_extraction(input):
+        greyscale = GreyscaleImage(input[0])
+        return extract_tamuras_features(greyscale)
 
     def hog_features_extraction(input):
         greyscale = GreyscaleImage(input[0])
@@ -111,10 +112,11 @@ def feature_extraction_pipeline(image_file_path, features_file_path,
     strategy2 = PipelineStrategy(load_features_file, [11, 15], 2)
     strategy3 = PipelineStrategy(wavelet_features_extraction, [1, 12], 3)
     strategy4 = PipelineStrategy(color_features_extraction, [1], 4)
-    strategy5 = PipelineStrategy(texture_features_extraction, [1, 13, 14], 5)
+    strategy5 = PipelineStrategy(tamura_features_extraction, [1], 5)
     strategy6 = PipelineStrategy(hog_features_extraction, [1, 16, 17, 18], 6)
-    strategy7 = PipelineStrategy(combine_features, [2, 3, 4, 5, 6], 7)
-    strategy8 = PipelineStrategy(save_features_file, [11, 15, 7], 8)
+    strategy7 = PipelineStrategy(wavelet_features_extraction, [1, 19], 7)
+    strategy8 = PipelineStrategy(combine_features, [2, 3, 4, 5, 6,7], 8)
+    strategy9 = PipelineStrategy(save_features_file, [11, 15, 7], 9)
 
     pipeline = Pipeline()
 
@@ -127,6 +129,7 @@ def feature_extraction_pipeline(image_file_path, features_file_path,
     pipeline.add_data_point(data_point16)
     pipeline.add_data_point(data_point17)
     pipeline.add_data_point(data_point18)
+    pipeline.add_data_point(data_point19)
 
     pipeline.add_strategy(strategy1)
     pipeline.add_strategy(strategy2)
@@ -136,6 +139,7 @@ def feature_extraction_pipeline(image_file_path, features_file_path,
     pipeline.add_strategy(strategy6)
     pipeline.add_strategy(strategy7)
     pipeline.add_strategy(strategy8)
+    pipeline.add_strategy(strategy9)
 
     pipeline.run()
 
@@ -183,7 +187,6 @@ def dataset_feature_extraction(path_to_dataset, feature_dir_path,
     strategy4 = PipelineStrategy(perform_extraction_on_files,
                                  [2, 3, 12, 13, 14, 15, 16, 17], 4)
 
-
     pipeline = Pipeline()
 
     pipeline.add_data_point(data_point_10)
@@ -202,17 +205,20 @@ def dataset_feature_extraction(path_to_dataset, feature_dir_path,
 
     pipeline.run()
 
-
 if __name__ == "__main__":
-    img_path = "/Users/apple/PycharmProjects/BACH/Dataset/iciar_test/Photos"
-    features_path = "/Users/apple/PycharmProjects/BACH/Dataset/iciar_test/whole_images_features"
-    mother_wavelet = "db1"
+    import time
+    img_path = "/Users/apple/PycharmProjects/BACH/Dataset/iciar_test/Normalized/Benign/b001.tif"
+    features_path = "/Users/apple/PycharmProjects/BACH/Dataset/iciar_test/whole_images_features/Benign/b001.json"
+    mother_wavelet1 = "db1"
+    mother_wavelet2 = "db2"
     distance = [1, 3]
     angle = [0, np.pi / 2, np.pi, 3. * np.pi / 2.]
     label = 0
     orientations = 9
     pixels_per_cell = (300, 300)
     cells_per_block = (4, 4)
-    dataset_feature_extraction(img_path, features_path, mother_wavelet, distance,
-                                angle, orientations, pixels_per_cell,
-                                cells_per_block)
+    time0 = time.time()
+    feature_extraction_pipeline(img_path, features_path, mother_wavelet1, distance,
+                                angle, 1, orientations, pixels_per_cell,
+                                cells_per_block,mother_wavelet2)
+    print(time.time() - time.time())
